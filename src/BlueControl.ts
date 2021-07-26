@@ -1,19 +1,7 @@
 import Bluemap from 'BlueMap';
 import * as THREE from 'three';
 
-type coords = {
-	x: number,
-	y: number,
-	z: number
-}
-
-interface Location{
-	name: string,
-	world: string,
-	coords: coords,
-	radius: number,
-	angle: number
-}
+import {Location, coords} from 'types';
 
 function coordsToVec(c: coords){
 	return new THREE.Vector3(c.x, c.y, c.z);
@@ -62,7 +50,7 @@ async function changeLocation(index: number){
 	animate();
 }
 
-export default function(map: Bluemap, locs: Location[]){
+export default function(map: Bluemap, locs: Location[], cb: (loc: Location)=>void){
 	const controls = map.mapViewer.controlsManager;
 	const camera = controls.camera as THREE.Camera;
 
@@ -70,15 +58,17 @@ export default function(map: Bluemap, locs: Location[]){
 
 	let ind = 0;
 	changeLocation(ind);
+	cb(locations[ind]);
 
 	map.setFreeFlight(0, locations[ind].coords.y);
 
-	setInterval(()=>{
+	let changeInterval = setInterval(()=>{
 		ind++;
 		if(ind === locations.length){
 			ind = 0;
 		}
 		changeLocation(ind);
+		cb(locations[ind]);
 	}, changeLocInterval);
 
 	const animate = () =>{
@@ -102,4 +92,8 @@ export default function(map: Bluemap, locs: Location[]){
 	}
 
 	animate();
+
+	return () => {
+		clearInterval(changeInterval);
+	}
 }

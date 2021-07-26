@@ -2,12 +2,16 @@ import React, { useEffect } from "react";
 import BlueMap from 'BlueMap';
 
 import BlueControl from './BlueControl';
+import {Location, coords} from 'types';
+import { useState } from "react";
 
 interface Props{
 	
 }
 
 function App(props: Props) {
+	let [locName, setLocName] = useState<string>('');
+	let [coords, setCoords] = useState<string>('');
 
 
 	const queryString = window.location.search;
@@ -26,16 +30,32 @@ function App(props: Props) {
 				window.bluemap.load().finally(()=>{
 					if(uiDisabled){
 						console.log('Automating travel')
-						BlueControl(window.bluemap, json.locations);
+						BlueControl(window.bluemap, json.locations, (loc: Location)=>{
+							let {name, coords} = loc;
+							setLocName(name);
+							setCoords(`${coords.x}, ${coords.y}, ${coords.z}`);
+						});
 					}
 				});
 			}
 		}
 
 		setUpBlueMap();
-	});
+	}, []);
 
-	if(uiDisabled) return(<></>);
+	if(uiDisabled) return(
+		<div id="nametag">
+			You're viewing&nbsp;
+			<span className="location">
+				{locName}
+			</span>
+			&nbsp;-&nbsp;
+			Located at&nbsp;
+			<span className="coords">
+				{coords}
+			</span>
+		</div>
+	);
 
 	return (
 		<div>
